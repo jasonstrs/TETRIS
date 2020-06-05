@@ -1,0 +1,40 @@
+<div class="grid mt-3 container">
+    <canvas #board class="game-board"></canvas>
+    <div class="right-column">
+        <div>
+            <h1>TETRIS</h1>
+            <p>Score : {{points}} </p>
+            <p>Lignes : {{lines}} </p>
+            <p>Niveau : {{level}} </p>
+        </div>
+        <button *ngIf="!onActif" (click)="play();" class="play-button">Jouer</button>
+        <button *ngIf="onActif" (click)="leaveGame();" class="play-button danger">Quitter la partie</button>
+
+        <h5 *ngIf="onActif" class="mt-3"><i>Prochaine figure</i></h5>
+        <canvas #next class='mt-3 next' style="display: block;"></canvas>
+
+        
+        <div id="icons">
+            <div class="classIcons">
+                <i class="fa fa-arrow-circle-up fa-3x"></i>
+                <span><b>ROTATION</b></span>
+            </div>
+            <div class="classIcons">
+                <i class="fa fa-arrow-circle-right fa-3x"></i>
+                <span><b>DROITE</b></span>  
+            </div>
+            <div class="classIcons">
+                <i class="fa fa-arrow-circle-left fa-3x"></i>  
+                <span><b>GAUCHE</b></span>  
+            </div>
+            <div class="classIcons">
+                <i class="fa fa-arrow-circle-down fa-3x"></i> 
+                <span><b>DESCENTE</b></span>   
+            </div>
+            <div class="classIcons">
+                <i class="fa fa-minus fa-3x"></i>
+                <span><b>COUP DIRECT</b></span>
+            </div>
+        </div>
+    </div>
+</div>

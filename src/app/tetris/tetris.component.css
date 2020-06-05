@@ -1,0 +1,45 @@
+canvas {
+    border-style: solid;
+}
+
+.grid {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.play-button {
+    background-color: #4caf50;
+    font-size: 16px;
+    padding: 15px 30px;
+    cursor: pointer;
+  }
+
+.next {
+    border-style: none !important;
+}
+
+.danger {
+    background-color: lightcoral;
+  }
+
+.classIcons {
+    display: flex;
+    align-items: center;
+}
+
+.classIcons > i {
+    margin-right: 0.5rem;
+}
+
+@media screen and (max-width: 509px)  {
+    .classIcons {
+        display: none;
+    }
+
+    .grid {
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+
+}
