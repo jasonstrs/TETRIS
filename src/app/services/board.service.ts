@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ROWS, COLS, Points } from '../constants';
 import { IPiece } from '../tetris/interfaceTetris';
 
+
 @Injectable({
   providedIn: 'root'
 })
