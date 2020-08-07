@@ -8,6 +8,11 @@ canvas {
     flex-wrap: wrap;
 }
 
+.modeAndSong {
+    display: flex;
+    justify-content: space-around;
+}
+
 .play-button {
     background-color: #4caf50;
     font-size: 16px;
@@ -32,7 +37,11 @@ canvas {
     margin-right: 0.5rem;
 }
 
-@media screen and (max-width: 509px)  {
+.next {
+    display: block;
+}
+
+@media screen and (max-width: 560px)  {
     .classIcons {
         display: none;
     }
@@ -42,4 +51,61 @@ canvas {
         align-items: center;
     }
 
+    #song {
+        margin-top: 2rem;
+    }
+
+    .next {
+        display: none;
+    }
+}
+
+#first {
+    height: 100vh;
+    background-color: lightcyan;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#first > h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+#plateformes button:first-child {
+    margin-right: 1rem;
+}
+
+#plateformes button:last-child{
+    margin-left: 1rem;
+}
+
+@media screen and (max-width: 460px)  {
+   #plateformes {
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+   }
+
+   .addMargin {
+       margin-top: 1rem;
+       margin-right: 0 !important;
+       margin-left: 0 !important;
+   }
+
+   #first > h2 {
+        text-align: center;
+        margin-bottom:0;
+    }
+}
+
+#clickIcons {
+    display: flex;
+    justify-content: space-between;
+}
+
+#clickIcons i {
+    cursor: pointer;
 }

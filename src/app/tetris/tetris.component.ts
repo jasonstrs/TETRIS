@@ -1,8 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, Inject, ChangeDetectorRef } from '@angular/core';
 import { COLS, BLOCK_SIZE, ROWS, KEYCODE, COLORS, Points, LINES_PER_LEVEL, Level } from '../constants';
 import { BoardService } from '../services/board.service';
 import { Piece } from './Piece';
 import { IPiece } from './interfaceTetris';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-tetris',
@@ -11,33 +12,18 @@ import { IPiece } from './interfaceTetris';
 })
 export class TetrisComponent implements OnInit {
   // reference canvas
-  @ViewChild('board',{static:true})
+  @ViewChild('board',{static:false}) // quand la valeur change, on l'update, il n'est pas static
   canvas:ElementRef<HTMLCanvasElement>;
 
   // reference next canvas
-  @ViewChild('next',{static:true})
+  @ViewChild('next',{static:false})
   canvasNext:ElementRef<HTMLCanvasElement>;
 
   @HostListener('window:keydown', ['$event'])
   keyEvent(event:KeyboardEvent){
     if(this.moves[event.keyCode]){ // si ça correspond à nos events
       event.preventDefault();
-
-      var p = this.moves[event.keyCode](this.piece);
-
-      // on check si c'est un clic sur espace
-      if(event.keyCode === KEYCODE.SPACE){
-        while(this.boardService.validMove(p,this.board)){
-          this.piece.move(p);
-          this.points += Points.HARD_DROP;
-          p=this.moves[KEYCODE.SPACE](this.piece);
-        }
-      } else if (this.boardService.validMove(p,this.board)){
-        this.piece.move(p); // on déplace ensuite la piece
-        this.draw();
-        if(event.key === "ArrowDown")
-          this.points += Points.SOFT_DROP;
-      }
+      this.moveTetrominos(event.keyCode);
     }
   }
 
@@ -52,7 +38,12 @@ export class TetrisComponent implements OnInit {
   pieceNext:Piece;
   time:number;
   onActif:boolean=false; // permet de savoir si l'utilisateur joue ou non 
-  audio:any;
+  audio:any=false;
+  musicActif:boolean=true; // la musique peut-être mise en marche
+
+  onChoosePlateforme:boolean=false; // si l'utilisateur a choisi sa plateforme
+  onMobile:boolean=false; // permet de savoir si l'utilisateur a choisi la plateforme téléphone
+  player:string="anonyme";
 
   moves = {
     [KEYCODE.LEFT]:  (p: IPiece): IPiece => ({ ...p, x: p.x - 1 }),
@@ -62,13 +53,65 @@ export class TetrisComponent implements OnInit {
     [KEYCODE.UP]:       (p: IPiece): IPiece => this.boardService.rotate(p)
   };
 
-  constructor(private boardService:BoardService) { }
+  constructor(private boardService:BoardService,@Inject(ChangeDetectorRef) private changeDetectorRef: ChangeDetectorRef,
+    private http: HttpClient) {}
 
   ngOnInit(): void {
+  }
+
+  choosePlateforme(event){
+    var pseudo =<string>$("#pseudo").val();
+    var plateforme = event.target.value;
+
+    if(pseudo !="") // si le pseudo n'est pas vide, on le garde
+      this.player=pseudo;
+
+    this.onChoosePlateforme=true;
+    
+    this.changeDetectorRef.detectChanges(); // on met à jour la page
+    
     this.initBoard();
     this.initNext();
     this.resetGame();
     this.drawGrid();
+
+    if (plateforme === "MOBILE"){
+      this.onMobile=true;
+      this.initPopup(false);
+    } else 
+      this.initPopup(true);
+  }
+
+  initPopup(checked:boolean){
+    var context = this;
+  
+    (<any>$('#song')).bootstrapToggle({
+      on: '<i class="fa fa-microphone"></i>  Avec',
+      off: '<i class="fa fa-microphone-slash"></i>  Sans'
+    });
+
+
+    (<any>$('#mode').prop("checked",checked)).bootstrapToggle({
+      on: '<i class="fa fa-laptop"></i>  PC',
+      off: '<i class="fa fa-mobile"></i>  Mobile'
+    });
+
+    $("#song").change(function(event){
+      context.musicActif = $(event.target).prop('checked');
+      if (!context.musicActif) // si la musique doit-être coupée, on l'a coupe
+        context.stopMusic();
+      else if(context.musicActif && context.onActif)// Si on active la musique et on est en game, on lance la musique
+        context.launchMusic();
+    });
+
+    $("#mode").change(function(event){
+      var plateforme:boolean = $(event.target).prop('checked');
+      if (plateforme) 
+        context.onMobile=false;
+      else 
+        context.onMobile=true;
+      context.changeDetectorRef.detectChanges(); // on met à jour les changements
+    });
   }
 
   initBoard(){
@@ -88,7 +131,6 @@ export class TetrisComponent implements OnInit {
 
   play() {
     this.launchMusic();
-
     this.onActif=true;
     this.resetGame();
     this.board = this.boardService.getEmptyBoard();
@@ -210,6 +252,7 @@ export class TetrisComponent implements OnInit {
     this.ctx.font = '1px Arial';
     this.ctx.fillStyle = 'red';
     this.ctx.fillText('GAME OVER', 1.2, 4);
+    this.saveScore();
   }
 
   leaveGame(){
@@ -232,15 +275,89 @@ export class TetrisComponent implements OnInit {
   }
 
   launchMusic(){
-    this.audio = new Audio('assets/originalTetris.mp4');
-    this.audio.play();
+    if (this.musicActif){ // si la musique est activée
+      this.audio = new Audio('assets/originalTetris.mp4');
+      this.audio.play();
+    }
   }
 
   stopMusic(){
-    this.audio.pause();
-    this.audio.currentTime=0;
+    if (this.audio){
+      this.audio.pause();
+      this.audio.currentTime=0;
+    }
   }
 
+  // PLAY VERSION
   
+  moveTetrominos(keyCode){
+      var p = this.moves[keyCode](this.piece);
+
+      // on check si c'est un clic sur espace
+      if(keyCode === KEYCODE.SPACE){
+        while(this.boardService.validMove(p,this.board)){
+          this.piece.move(p);
+          this.points += Points.HARD_DROP;
+          p=this.moves[KEYCODE.SPACE](this.piece);
+        }
+      } else if (this.boardService.validMove(p,this.board)){
+        this.piece.move(p); // on déplace ensuite la piece
+        this.draw();
+        if(keyCode === KEYCODE.DOWN)
+          this.points += Points.SOFT_DROP;
+      }
+  }
+
+  getClassement() {
+    var ch="";
+    var tab:Array<any>=[];
+    this.http.get('assets/classement.php',{params:{action:"Lister Classement"}}).subscribe(data=>{
+      tab=<Array<any>>data;
+
+      for(var i=0;i<tab.length;i++)
+        ch+=`<li class="list-group-item" style="display:flex;justify-content:space-between"><p>`+tab[i].nom+`</p><p>`+tab[i].score +`</p></li>`;
+      this.displayPopupClassement(ch);
+      
+    },error => console.log("Erreur : "+error));
+  }
+
+  displayPopupClassement(ch:string){
+    $("#modal").remove(); // s'il y a déjà un modal
+    var modal = `
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Classement des 10 meilleurs</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" style="display:flex;justify-content:space-between"><p><b>Nom</b></p><p><b>Score</b></p></li>
+            `+ch+`
+          </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    $("#game").append(modal);
+    (<any>$("#modal")).modal();
+  }
+
+  async saveScore(){
+    console.log('here');
+    let formData = new FormData();   
+    formData.append("action","addscore");
+    formData.append("score",this.points.toString());
+    formData.append("name",this.player);
+
+    this.http.post('assets/classement.php',formData).subscribe(data => {
+    }, error => console.log("Erreur : " + error));
+  }
 
 }
