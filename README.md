@@ -1,27 +1,10 @@
-# Games
+# Tetris
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.0.3.
+This project aimed to improve my skills in Angular. For this, I developed a Tetris capable of running on the web as well as on mobile.  
+A ranking is also available to compare your score with other players. All data is stored using firebase.  
 
-## Development server
+## Main Page
+<img width="1246" alt="Capture d’écran 2022-08-24 à 19 07 58" src="https://user-images.githubusercontent.com/56001431/186539559-98eee8b3-ba95-413f-a4a9-b300e225ab88.png">
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## Game Page
+<img width="1076" alt="Capture d’écran 2022-08-24 à 19 08 52" src="https://user-images.githubusercontent.com/56001431/186539575-22631fe3-c948-41b6-8cde-00d95bda5036.png">
